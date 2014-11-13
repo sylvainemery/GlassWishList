@@ -54,6 +54,7 @@ public class ProductInfoActivity extends Activity {
         // get the barcode the scanning activity gave us
         Intent myIntent = getIntent();
         String code = myIntent.getStringExtra("code");
+        String symbology = myIntent.getStringExtra("symbology");
 
         Product theProduct;
 
@@ -61,7 +62,7 @@ public class ProductInfoActivity extends Activity {
             theProduct = null;
         } else {
             // get the product corresponding to this barcode
-            theProduct = ItemLookupHelper.ItemLookup(getString(R.string.AWS_ACCESS_KEY_ID), getString(R.string.AWS_SECRET_KEY), getString(R.string.AssociateTag), code);
+            theProduct = ItemLookupHelper.ItemLookup(getString(R.string.AWS_ACCESS_KEY_ID), getString(R.string.AWS_SECRET_KEY), getString(R.string.AssociateTag), code, symbology);
         }
 
         createCards(theProduct);

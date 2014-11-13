@@ -108,6 +108,7 @@ public class ScanActivity extends Activity
         }
         Intent myIntent = new Intent(this, ProductInfoActivity.class);
         myIntent.putExtra("code", barcode);
+        myIntent.putExtra("symbology", symbology);
         startActivity(myIntent);
     }
 

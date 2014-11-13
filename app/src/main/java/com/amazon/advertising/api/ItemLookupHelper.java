@@ -53,7 +53,7 @@ public class ItemLookupHelper {
     private static final String ENDPOINT = "webservices.amazon.fr";
 
 
-    public static Product ItemLookup(String access_key, String secret_key, String associate_tag, String ean) {
+    public static Product ItemLookup(String access_key, String secret_key, String associate_tag, String code, String symbology) {
         /*
          * Set up the signed requests helper
          */
@@ -78,13 +78,18 @@ public class ItemLookupHelper {
         params.put("Operation", "ItemLookup");
         params.put("SearchIndex", "All");
         params.put("MerchantId", "Amazon");
-        params.put("IdType", "EAN");
-        params.put("ItemId", ean);
+        if (symbology.equals("EAN13")) {
+            params.put("IdType", "EAN");
+        }
+        else if (symbology.equals("UPC12")) {
+            params.put("IdType", "UPC");
+        }
+        params.put("ItemId", code);
         params.put("Condition", "New");
         params.put("ResponseGroup", "Small,Images,OfferSummary");
         requestUrl = helper.sign(params);
 
-        return fetchProduct(ean, requestUrl);
+        return fetchProduct(code, requestUrl);
     }
 
     /*
