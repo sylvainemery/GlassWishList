@@ -81,8 +81,7 @@ public class ItemLookupHelper {
         //TODO: what if we get another symbology?
         if (symbology.equals("EAN13")) {
             params.put("IdType", "EAN");
-        }
-        else if (symbology.equals("UPC12")) {
+        } else if (symbology.equals("UPC12")) {
             params.put("IdType", "UPC");
         }
         params.put("ItemId", code);
@@ -97,7 +96,7 @@ public class ItemLookupHelper {
      * Utility function to fetch the response from the service and extract the
      * title from the XML.
      */
-    private static Product fetchProduct(String ean, String requestUrl) {
+    private static Product fetchProduct(String code, String requestUrl) {
         Product p = null;
         String title = null;
         double price = 0.0;
@@ -117,17 +116,17 @@ public class ItemLookupHelper {
             Node AmountNode = priceNode.getElementsByTagName("Amount").item(0);
             Node CurrencyNode = priceNode.getElementsByTagName("CurrencyCode").item(0);
             if (CurrencyNode.getTextContent().equals("EUR")) {
-                price = Double.parseDouble(AmountNode.getTextContent())/100.0;
+                price = Double.parseDouble(AmountNode.getTextContent()) / 100.0;
             }
 
             Element imgNode = (Element) productNode.getElementsByTagName("LargeImage").item(0);
             Node urlNode = imgNode.getElementsByTagName("URL").item(0);
             urlImg = urlNode.getTextContent();
 
-            p = new Product(Long.parseLong(ean), title, urlImg, price);
+            p = new Product(Long.parseLong(code), title, urlImg, price);
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
 
         return p;
