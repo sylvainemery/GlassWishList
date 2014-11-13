@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GlassWishList</string>
+    <string name="title_activity_scan">Scan a barcode</string>
+    <string name="title_activity_productinfo">Product info</string>
+
+    <string name="result_notfound">Code-barres non reconnu</string>
+
+</resources>
