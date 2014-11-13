@@ -151,7 +151,7 @@ public class SignedRequestsHelper {
 
         // construct the URL
         String url =
-                "http://" + this.endpoint + REQUEST_URI + "?" + canonicalQS + "&Signature=" + sig.replaceAll("%0A", "");
+                "http://" + this.endpoint + REQUEST_URI + "?" + canonicalQS + "&Signature=" + sig;
 
         return url;
     }
@@ -176,6 +176,12 @@ public class SignedRequestsHelper {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(UTF8_CHARSET + " is unsupported!", e);
         }
+        // bug? it seems that an extra \n is added at the end of the signature
+        // if it exists, we strip it, as the signature made by Amazon doesn't include it
+        if (signature.endsWith("\n")) {
+            signature = signature.substring(0, signature.length()-1);
+        }
+
         return signature;
     }
 
