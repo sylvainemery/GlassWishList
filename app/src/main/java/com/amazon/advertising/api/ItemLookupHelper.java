@@ -78,6 +78,7 @@ public class ItemLookupHelper {
         params.put("Operation", "ItemLookup");
         params.put("SearchIndex", "All");
         params.put("MerchantId", "Amazon");
+        //TODO: what if we get another symbology?
         if (symbology.equals("EAN13")) {
             params.put("IdType", "EAN");
         }

@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -23,6 +25,10 @@ import com.google.android.glass.widget.CardScrollView;
 import com.amazon.advertising.api.Product;
 import com.amazon.advertising.api.ItemLookupHelper;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,10 +128,8 @@ public class ProductInfoActivity extends Activity {
 
         card.setFootnote(String.format("%s", p.getBarcode()));
 
-        /*if (img != null) {
-            // add the bitmap to the card
-            card.addImage(img);
-        }*/
+        card.addImage(drawableFromUrl(p.getImageURL()));
+
 
         mCards.add(card);
 
@@ -162,6 +166,20 @@ public class ProductInfoActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             return mCards.get(position).getView(convertView, parent);
+        }
+    }
+
+
+    private Drawable drawableFromUrl(String url) {
+        try {
+            Bitmap bitmap;
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            bitmap = BitmapFactory.decodeStream(input);
+            return new BitmapDrawable(bitmap);
+        } catch (IOException e) {
+            return null;
         }
     }
 
