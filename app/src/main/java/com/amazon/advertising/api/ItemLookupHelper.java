@@ -28,6 +28,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 /*
  * This class shows how to make a simple authenticated ItemLookup call to the
@@ -83,26 +84,47 @@ public class ItemLookupHelper {
         params.put("ResponseGroup", "Small,Images,OfferSummary");
         requestUrl = helper.sign(params);
 
-        Product p = new Product(Long.parseLong(ean), fetchTitle(requestUrl), null, 0.0);
-        return (p);
+        return fetchProduct(ean, requestUrl);
     }
 
     /*
      * Utility function to fetch the response from the service and extract the
      * title from the XML.
      */
-    private static String fetchTitle(String requestUrl) {
+    private static Product fetchProduct(String ean, String requestUrl) {
+        Product p = null;
         String title = null;
+        double price = 0.0;
+        String urlImg = null;
+
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(requestUrl);
-            Node titleNode = doc.getElementsByTagName("Title").item(0);
+
+            Element productNode = (Element) doc.getElementsByTagName("Item").item(0);
+
+            Node titleNode = productNode.getElementsByTagName("Title").item(0);
             title = titleNode.getTextContent();
+
+            Element priceNode = (Element) productNode.getElementsByTagName("LowestNewPrice").item(0);
+            Node AmountNode = priceNode.getElementsByTagName("Amount").item(0);
+            Node CurrencyNode = priceNode.getElementsByTagName("CurrencyCode").item(0);
+            if (CurrencyNode.getTextContent().equals("EUR")) {
+                price = Double.parseDouble(AmountNode.getTextContent())/100.0;
+            }
+
+            Element imgNode = (Element) productNode.getElementsByTagName("LargeImage").item(0);
+            Node urlNode = imgNode.getElementsByTagName("URL").item(0);
+            urlImg = urlNode.getTextContent();
+
+            p = new Product(Long.parseLong(ean), title, urlImg, price);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return title;
+
+        return p;
     }
 
 }

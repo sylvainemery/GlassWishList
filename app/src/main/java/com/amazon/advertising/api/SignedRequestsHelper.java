@@ -91,6 +91,7 @@ public class SignedRequestsHelper {
             String awsAccessKeyId,
             String awsSecretKey
     ) throws IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+
         if (null == endpoint || endpoint.length() == 0) {
             throw new IllegalArgumentException("endpoint is null or empty");
         }
@@ -150,8 +151,7 @@ public class SignedRequestsHelper {
         String sig = this.percentEncodeRfc3986(hmac);
 
         // construct the URL
-        String url =
-                "http://" + this.endpoint + REQUEST_URI + "?" + canonicalQS + "&Signature=" + sig;
+        String url = "http://" + this.endpoint + REQUEST_URI + "?" + canonicalQS + "&Signature=" + sig;
 
         return url;
     }
