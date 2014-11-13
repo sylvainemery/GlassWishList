@@ -23,7 +23,6 @@ package com.amazon.advertising.api;
 
 import java.io.UnsupportedEncodingException;
 
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 import java.security.InvalidKeyException;
@@ -33,7 +32,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
@@ -75,6 +73,7 @@ public class SignedRequestsHelper {
     private String endpoint = null;
     private String awsAccessKeyId = null;
     private String awsSecretKey = null;
+    private String associateTag = null;
 
     private SecretKeySpec secretKeySpec = null;
     private Mac mac = null;
@@ -85,11 +84,13 @@ public class SignedRequestsHelper {
      * @param endpoint       Destination for the requests.
      * @param awsAccessKeyId Your AWS Access Key ID
      * @param awsSecretKey   Your AWS Secret Key
+     * @param associateTag   Your Amazon Associate Tag (https://affiliate-program.amazon.com/)
      */
     public static SignedRequestsHelper getInstance(
             String endpoint,
             String awsAccessKeyId,
-            String awsSecretKey
+            String awsSecretKey,
+            String associateTag
     ) throws IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
 
         if (null == endpoint || endpoint.length() == 0) {
@@ -101,11 +102,15 @@ public class SignedRequestsHelper {
         if (null == awsSecretKey || awsSecretKey.length() == 0) {
             throw new IllegalArgumentException("awsSecretKey is null or empty");
         }
+        if (null == associateTag || associateTag.length() == 0) {
+            throw new IllegalArgumentException("associateTag is null or empty");
+        }
 
         SignedRequestsHelper instance = new SignedRequestsHelper();
         instance.endpoint = endpoint.toLowerCase();
         instance.awsAccessKeyId = awsAccessKeyId;
         instance.awsSecretKey = awsSecretKey;
+        instance.associateTag = associateTag;
 
         byte[] secretKeyBytes = instance.awsSecretKey.getBytes(UTF8_CHARSET);
         instance.secretKeySpec = new SecretKeySpec(secretKeyBytes, HMAC_SHA256_ALGORITHM);
@@ -130,6 +135,7 @@ public class SignedRequestsHelper {
     public String sign(Map<String, String> params) {
         // Let's add the AWSAccessKeyId and Timestamp parameters to the request.
         params.put("AWSAccessKeyId", this.awsAccessKeyId);
+        params.put("AssociateTag", this.associateTag);
         params.put("Timestamp", this.timestamp());
 
         // The parameters need to be processed in lexicographical order, so we'll
@@ -164,14 +170,12 @@ public class SignedRequestsHelper {
      * @return base64-encoded hmac value.
      */
     private String hmac(String stringToSign) {
-        String signature = null;
+        String signature;
         byte[] data;
         byte[] rawHmac;
         try {
             data = stringToSign.getBytes(UTF8_CHARSET);
             rawHmac = mac.doFinal(data);
-            //Base64 encoder = new Base64();
-            //signature = new String(encoder.encode(rawHmac));
             signature = Base64.encodeToString(rawHmac, Base64.DEFAULT);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(UTF8_CHARSET + " is unsupported!", e);
@@ -191,7 +195,7 @@ public class SignedRequestsHelper {
      * @return ISO-8601 format timestamp.
      */
     private String timestamp() {
-        String timestamp = null;
+        String timestamp;
         Calendar cal = Calendar.getInstance();
         DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         dfm.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -210,7 +214,7 @@ public class SignedRequestsHelper {
             return "";
         }
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         Iterator<Map.Entry<String, String>> iter = sortedParamMap.entrySet().iterator();
 
         while (iter.hasNext()) {
@@ -222,8 +226,8 @@ public class SignedRequestsHelper {
                 buffer.append("&");
             }
         }
-        String canonical = buffer.toString();
-        return canonical;
+
+        return buffer.toString();
     }
 
     /**

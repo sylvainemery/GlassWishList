@@ -60,7 +60,7 @@ public class ItemLookupHelper {
 
         SignedRequestsHelper helper;
         try {
-            helper = SignedRequestsHelper.getInstance(ENDPOINT, access_key, secret_key);
+            helper = SignedRequestsHelper.getInstance(ENDPOINT, access_key, secret_key, associate_tag);
         } catch (Exception e) {
             e.printStackTrace();
             return (null);
@@ -72,7 +72,6 @@ public class ItemLookupHelper {
          * into a query string. */
 
         Map<String, String> params = new HashMap<String, String>();
-        params.put("AssociateTag", associate_tag);
         params.put("Service", "AWSECommerceService");
         params.put("Version", "2011-08-01");
         params.put("Operation", "ItemLookup");

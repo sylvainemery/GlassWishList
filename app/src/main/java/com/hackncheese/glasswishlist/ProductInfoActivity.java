@@ -5,13 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -123,12 +120,12 @@ public class ProductInfoActivity extends Activity {
         // main product info card
         card = new CardBuilder(this, CardBuilder.Layout.TEXT);
 
-        String mainText = String.format("%s<br/><font color='#808080'>%.2f&nbsp;€</font> - ", p.getName(), p.getPrice());
+        String mainText = String.format("%s <font color='#808080'>(%.2f&nbsp;€)</font>", p.getName(), p.getPrice());
         card.setText(Html.fromHtml(mainText));
 
         card.setFootnote(String.format("%s", p.getBarcode()));
 
-        card.addImage(drawableFromUrl(p.getImageURL()));
+        card.addImage(bitmapFromUrl(p.getImageURL()));
 
 
         mCards.add(card);
@@ -170,14 +167,14 @@ public class ProductInfoActivity extends Activity {
     }
 
 
-    private Drawable drawableFromUrl(String url) {
+    private Bitmap bitmapFromUrl(String url) {
         try {
             Bitmap bitmap;
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.connect();
             InputStream input = connection.getInputStream();
             bitmap = BitmapFactory.decodeStream(input);
-            return new BitmapDrawable(bitmap);
+            return bitmap;
         } catch (IOException e) {
             return null;
         }
