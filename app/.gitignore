@@ -1,1 +1,4 @@
 /build
+
+src/main/res/values/awscredentials.xml
+src/main/res/values/scanditappkey.xml
