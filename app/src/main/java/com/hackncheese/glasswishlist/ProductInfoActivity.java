@@ -6,21 +6,25 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 
+import com.amazon.advertising.api.ItemLookupHelper;
+import com.amazon.advertising.api.Product;
 import com.google.android.glass.media.Sounds;
 import com.google.android.glass.widget.CardBuilder;
 import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
-
-import com.amazon.advertising.api.Product;
-import com.amazon.advertising.api.ItemLookupHelper;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An {@link Activity} showing a product info card.
@@ -44,6 +49,8 @@ public class ProductInfoActivity extends Activity {
     private CardScrollView mCardScrollView;
 
     private List<CardBuilder> mCards;
+
+    private SendToTrelloTask mCreateTrelloCardTask;
 
 
     @Override
@@ -86,6 +93,12 @@ public class ProductInfoActivity extends Activity {
             }
         });
 
+
+        // add the product to Trello
+        mCreateTrelloCardTask = new SendToTrelloTask();
+        mCreateTrelloCardTask.execute(theProduct);
+
+
         //prevent screen dimming
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
@@ -99,6 +112,11 @@ public class ProductInfoActivity extends Activity {
     @Override
     protected void onPause() {
         mCardScrollView.deactivate();
+
+        if (mCreateTrelloCardTask != null) {
+            mCreateTrelloCardTask.cancel(true);
+        }
+
         super.onPause();
     }
 
@@ -115,7 +133,6 @@ public class ProductInfoActivity extends Activity {
             mCards.add(card);
             return;
         }
-
 
         // main product info card
         card = new CardBuilder(this, CardBuilder.Layout.TEXT);
@@ -178,6 +195,39 @@ public class ProductInfoActivity extends Activity {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    /**
+     *
+     */
+    private class SendToTrelloTask extends AsyncTask<Product, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(Product... p) {
+            OkHttpClient client = new OkHttpClient();
+            String addCardURL = "https://api.trello.com/1/cards?key=3af986f19ba93ed02025190779218213&token=391c142dc4b5dff4cf190bc00deb4cddb4a94e3da9de2c774b6733c4d77bbe77&idList=5474752070560601ab6755c5&urlSource=%s";
+            boolean result;
+
+            // don't wait more than 3 seconds total
+            client.setConnectTimeout(1000, TimeUnit.MILLISECONDS);
+            client.setWriteTimeout(1000, TimeUnit.MILLISECONDS);
+            client.setReadTimeout(6000, TimeUnit.MILLISECONDS);
+
+            Request request = new Request.Builder()
+                    .url(String.format(addCardURL, p[0].getProductURL()))
+                    .post(null)
+                    .build();
+
+            try {
+                Response response = client.newCall(request).execute();
+                result = response.isSuccessful();
+            } catch (IOException e) {
+                Log.e(TAG, "timed out while trying to create card in Trello");
+                result = false;
+            }
+
+            return result;
+        }
+
     }
 
 }
