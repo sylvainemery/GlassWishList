@@ -204,16 +204,16 @@ public class ProductInfoActivity extends Activity {
         @Override
         protected Boolean doInBackground(Product... p) {
             OkHttpClient client = new OkHttpClient();
-            String addCardURL = "https://api.trello.com/1/cards?key=3af986f19ba93ed02025190779218213&token=391c142dc4b5dff4cf190bc00deb4cddb4a94e3da9de2c774b6733c4d77bbe77&idList=5474752070560601ab6755c5&urlSource=%s";
+            String addCardURL = String.format("https://api.trello.com/1/cards?key=%1$s&token=%2$s&idList=%3$s&urlSource=%4$s", getString(R.string.trello_api_key), getString(R.string.trello_token), getString(R.string.trello_list_id), p[0].getProductURL());
             boolean result;
 
-            // don't wait more than 3 seconds total
+            // don't wait more than 8 seconds total
             client.setConnectTimeout(1000, TimeUnit.MILLISECONDS);
             client.setWriteTimeout(1000, TimeUnit.MILLISECONDS);
             client.setReadTimeout(6000, TimeUnit.MILLISECONDS);
 
             Request request = new Request.Builder()
-                    .url(String.format(addCardURL, p[0].getProductURL()))
+                    .url(addCardURL)
                     .post(null)
                     .build();
 
