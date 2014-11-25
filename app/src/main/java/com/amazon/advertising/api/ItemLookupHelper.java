@@ -100,6 +100,7 @@ public class ItemLookupHelper {
         String title = null;
         double price = 0.0;
         String urlImg = null;
+        String urlProduct = null;
 
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -122,7 +123,10 @@ public class ItemLookupHelper {
             Node urlNode = imgNode.getElementsByTagName("URL").item(0);
             urlImg = urlNode.getTextContent();
 
-            p = new Product(Long.parseLong(code), title, urlImg, price);
+            Node urlProductNode = productNode.getElementsByTagName("DetailPageURL").item(0);
+            urlProduct = urlProductNode.getTextContent();
+
+            p = new Product(Long.parseLong(code), title, urlProduct, urlImg, price);
 
         } catch (Exception e) {
             e.printStackTrace();

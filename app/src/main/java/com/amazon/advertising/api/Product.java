@@ -6,12 +6,14 @@ package com.amazon.advertising.api;
 public class Product {
     private long mBarcode;
     private String mName;
+    private String mProductURL;
     private String mImageURL;
     private double mPrice;
 
-    public Product(long barcode, String name, String imageURL, double price) {
+    public Product(long barcode, String name, String productURL, String imageURL, double price) {
         mBarcode = barcode;
         mName = name;
+        mProductURL = productURL;
         mImageURL = imageURL;
         mPrice = price;
     }
@@ -38,6 +40,14 @@ public class Product {
 
     public void setPrice(double Price) {
         this.mPrice = Price;
+    }
+
+    public String getProductURL() {
+        return mProductURL;
+    }
+
+    public void setProductURL(String productURL) {
+        this.mProductURL = productURL;
     }
 
     public String getImageURL() {
