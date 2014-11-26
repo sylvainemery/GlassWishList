@@ -126,7 +126,7 @@ public class ItemLookupHelper {
             Node urlProductNode = productNode.getElementsByTagName("DetailPageURL").item(0);
             urlProduct = urlProductNode.getTextContent();
 
-            p = new Product(Long.parseLong(code), title, urlProduct, urlImg, price);
+            p = new Product(Long.parseLong(code), title, urlProduct, urlImg, price, null);
 
         } catch (Exception e) {
             e.printStackTrace();
