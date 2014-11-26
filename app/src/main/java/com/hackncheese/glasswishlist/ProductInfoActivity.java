@@ -63,16 +63,15 @@ public class ProductInfoActivity extends Activity {
 
         // get the barcode the scanning activity gave us
         Intent myIntent = getIntent();
-        String code = myIntent.getStringExtra("code");
-        String symbology = myIntent.getStringExtra("symbology");
+        ScanResult scanResult = myIntent.getParcelableExtra("ScanResult");
 
         Product theProduct;
 
-        if (code == null) {
+        if (scanResult.getCode() == null) {
             theProduct = null;
         } else {
             // get the product corresponding to this barcode
-            theProduct = ItemLookupHelper.ItemLookup(getString(R.string.AWS_ACCESS_KEY_ID), getString(R.string.AWS_SECRET_KEY), getString(R.string.AssociateTag), code, symbology);
+            theProduct = ItemLookupHelper.ItemLookup(getString(R.string.AWS_ACCESS_KEY_ID), getString(R.string.AWS_SECRET_KEY), getString(R.string.AssociateTag), scanResult.getCode(), scanResult.getSymbology());
         }
 
         createCards(theProduct);
@@ -95,9 +94,10 @@ public class ProductInfoActivity extends Activity {
 
 
         // add the product to Trello
-        mCreateTrelloCardTask = new SendToTrelloTask();
-        mCreateTrelloCardTask.execute(theProduct);
-
+        if (theProduct != null) {
+            mCreateTrelloCardTask = new SendToTrelloTask();
+            mCreateTrelloCardTask.execute(theProduct);
+        }
 
         //prevent screen dimming
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -228,6 +228,17 @@ public class ProductInfoActivity extends Activity {
             return result;
         }
 
+        @Override
+        protected void onPostExecute(Boolean result) {
+            // play a nice sound
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (result) {
+                am.playSoundEffect(Sounds.SUCCESS);
+            } else {
+                am.playSoundEffect(Sounds.ERROR);
+            }
+            super.onPostExecute(result);
+        }
     }
 
 }

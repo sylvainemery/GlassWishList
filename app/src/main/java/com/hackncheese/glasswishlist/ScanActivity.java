@@ -107,8 +107,7 @@ public class ScanActivity extends Activity
             mBarcodePicker.stopScanning();
         }
         Intent myIntent = new Intent(this, ProductInfoActivity.class);
-        myIntent.putExtra("code", barcode);
-        myIntent.putExtra("symbology", symbology);
+        myIntent.putExtra("ScanResult", new ScanResult(barcode, symbology));
         startActivity(myIntent);
     }
 
