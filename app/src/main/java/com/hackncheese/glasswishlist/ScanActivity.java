@@ -106,7 +106,7 @@ public class ScanActivity extends Activity
         if (mBarcodePicker.isScanning()) {
             mBarcodePicker.stopScanning();
         }
-        Intent myIntent = new Intent(this, ProductInfoActivity.class);
+        Intent myIntent = new Intent(this, ProductLookupActivity.class);
         myIntent.putExtra("ScanResult", new ScanResult(barcode, symbology));
         startActivity(myIntent);
     }

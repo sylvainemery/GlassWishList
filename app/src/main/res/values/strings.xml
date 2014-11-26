@@ -2,9 +2,14 @@
 <resources>
 
     <string name="app_name">GlassWishList</string>
-    <string name="title_activity_scan">Scan a barcode</string>
-    <string name="title_activity_productinfo">Product info</string>
 
-    <string name="result_notfound">Code-barres non reconnu</string>
+    <string name="title_activity_scan">Scan a barcode</string>
+
+    <string name="title_activity_product_info">Product info</string>
+
+    <string name="result_lookingup">Looking up product</string>
+    <string name="result_notfound">Product not found</string>
+
+    <string name="title_activity_product_lookup">Product lookup</string>
 
 </resources>

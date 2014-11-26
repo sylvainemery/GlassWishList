@@ -4,8 +4,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Simple barcode scan result
+ * "Simple" barcode scan result
  * Contains the barcode and the symbology
+ * Parcelable so it can be passed easily between activities
  */
 public class ScanResult implements Parcelable {
 
