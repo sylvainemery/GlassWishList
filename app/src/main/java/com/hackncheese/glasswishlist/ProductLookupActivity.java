@@ -37,7 +37,9 @@ public class ProductLookupActivity extends Activity {
 
     // Activity state: looking up product info from barcode
     private boolean mIsLookingUpProduct = true;
-    // Activity state: product found if not null. Not (yet) found if null
+    // Activity state: sent successfully to Trello is true
+    private boolean mSentToTrello = false;
+    // Product found if not null. Not (yet) found if null. Also serves as activity state
     private Product mProduct = null;
 
     // Task to look up the product info
@@ -94,7 +96,6 @@ public class ProductLookupActivity extends Activity {
         mView = buildView();
         setContentView(mCardScroller);
 
-        //TODO : get this slider working
         mSlider = Slider.from(mCardScroller);
 
         // look up the product info
@@ -108,6 +109,12 @@ public class ProductLookupActivity extends Activity {
         super.onResume();
 
         mCardScroller.activate();
+
+        // show a slider (again) if we are looking up a product.
+        // Already done in the  asynctask's preexecute, but it is removed by the above scrollview's activate
+        if (mIsLookingUpProduct) {
+            mIndSlider = mSlider.startIndeterminate();
+        }
     }
 
     @Override
@@ -155,8 +162,11 @@ public class ProductLookupActivity extends Activity {
 
                 String mainText = String.format("%s <font color='#808080'>(%.2f&nbsp;€)</font>", mProduct.getName(), mProduct.getPrice());
                 card.setText(Html.fromHtml(mainText));
-
                 card.setFootnote(String.format("%s", mProduct.getBarcode()));
+
+                if (mSentToTrello) {
+                    card.setAttributionIcon(R.drawable.ic_cloud_done_36);
+                }
 
                 Bitmap bitmap = mProduct.getImageBitmap();
                 if (bitmap != null) {
@@ -305,6 +315,9 @@ public class ProductLookupActivity extends Activity {
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             if (result) {
                 am.playSoundEffect(Sounds.SUCCESS);
+                mSentToTrello = true;
+                mView = buildView();
+                mCardScroller.getAdapter().notifyDataSetChanged();
             } else {
                 am.playSoundEffect(Sounds.ERROR);
             }
