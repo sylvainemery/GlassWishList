@@ -109,24 +109,27 @@ public class ItemLookupHelper {
 
             Element productNode = (Element) doc.getElementsByTagName("Item").item(0);
 
-            Node titleNode = productNode.getElementsByTagName("Title").item(0);
-            title = titleNode.getTextContent();
+            if (productNode != null) {
 
-            Element priceNode = (Element) productNode.getElementsByTagName("LowestNewPrice").item(0);
-            Node AmountNode = priceNode.getElementsByTagName("Amount").item(0);
-            Node CurrencyNode = priceNode.getElementsByTagName("CurrencyCode").item(0);
-            if (CurrencyNode.getTextContent().equals("EUR")) {
-                price = Double.parseDouble(AmountNode.getTextContent()) / 100.0;
+                Node titleNode = productNode.getElementsByTagName("Title").item(0);
+                title = titleNode.getTextContent();
+
+                Element priceNode = (Element) productNode.getElementsByTagName("LowestNewPrice").item(0);
+                Node AmountNode = priceNode.getElementsByTagName("Amount").item(0);
+                Node CurrencyNode = priceNode.getElementsByTagName("CurrencyCode").item(0);
+                if (CurrencyNode.getTextContent().equals("EUR")) {
+                    price = Double.parseDouble(AmountNode.getTextContent()) / 100.0;
+                }
+
+                Element imgNode = (Element) productNode.getElementsByTagName("LargeImage").item(0);
+                Node urlNode = imgNode.getElementsByTagName("URL").item(0);
+                urlImg = urlNode.getTextContent();
+
+                Node urlProductNode = productNode.getElementsByTagName("DetailPageURL").item(0);
+                urlProduct = urlProductNode.getTextContent();
+
+                p = new Product(Long.parseLong(code), title, urlProduct, urlImg, price, null);
             }
-
-            Element imgNode = (Element) productNode.getElementsByTagName("LargeImage").item(0);
-            Node urlNode = imgNode.getElementsByTagName("URL").item(0);
-            urlImg = urlNode.getTextContent();
-
-            Node urlProductNode = productNode.getElementsByTagName("DetailPageURL").item(0);
-            urlProduct = urlProductNode.getTextContent();
-
-            p = new Product(Long.parseLong(code), title, urlProduct, urlImg, price, null);
 
         } catch (Exception e) {
             e.printStackTrace();
