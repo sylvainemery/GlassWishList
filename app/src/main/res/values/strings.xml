@@ -9,7 +9,11 @@
 
     <string name="result_lookingup">Looking up product</string>
     <string name="result_notfound">Product not found</string>
-
+    <string name="result_notfound_footnote">Dismiss to rescan or tap to take a picture now</string>
     <string name="title_activity_product_lookup">Product lookup</string>
+    <string name="title_activity_take_picture">Take a picture</string>
+
+    <string name="menu_retake_picture">Re-take picture</string>
+    <string name="menu_save_to_trello">Save to Trello</string>
 
 </resources>

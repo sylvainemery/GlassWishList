@@ -28,6 +28,11 @@
             android:name=".ProductLookupActivity"
             android:label="@string/title_activity_product_lookup" >
         </activity>
+        <activity
+            android:name=".TakePictureActivity"
+            android:icon="@drawable/ic_photo_camera_50"
+            android:label="@string/title_activity_take_picture" >
+        </activity>
     </application>
 
 </manifest>

@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -141,6 +142,23 @@ public class ProductLookupActivity extends Activity {
         super.onPause();
     }
 
+    @Override
+    public boolean onKeyDown(int keycode, KeyEvent event) {
+        if (keycode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            // user tapped touchpad
+            if (!mIsLookingUpProduct && mProduct == null) {
+                // no product found + tap = take picture
+                Intent myIntent = new Intent(this, TakePictureActivity.class);
+                startActivity(myIntent);
+                // don't return here after the TakePictureActivity returns
+                finish();
+
+                return true;
+            }
+        }
+        return super.onKeyDown(keycode, event);
+    }
+
     /**
      * Builds the view.
      * Depending on the activity state, it will be either:
@@ -176,7 +194,8 @@ public class ProductLookupActivity extends Activity {
                 // no product could be found
                 card = new CardBuilder(this, CardBuilder.Layout.ALERT);
                 card.setText(R.string.result_notfound)
-                        .setIcon(R.drawable.ic_warning_150);
+                        .setIcon(R.drawable.ic_warning_150)
+                        .setFootnote(getText(R.string.result_notfound_footnote));
             }
         }
 
