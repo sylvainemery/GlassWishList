@@ -11,8 +11,11 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 
 import com.amazon.advertising.api.ItemLookupHelper;
@@ -38,7 +41,7 @@ public class ProductLookupActivity extends Activity {
 
     // Activity state: looking up product info from barcode
     private boolean mIsLookingUpProduct = true;
-    // Activity state: sent successfully to Trello is true
+    // Activity state: sent successfully to Trello if true
     private boolean mSentToTrello = false;
     // Product found if not null. Not (yet) found if null. Also serves as activity state
     private Product mProduct = null;
@@ -70,6 +73,8 @@ public class ProductLookupActivity extends Activity {
         mIsLookingUpProduct = true;
 
         mCardScroller = new CardScrollView(this);
+        // disabling the scrollbar to let the indeterminate scroller work
+        mCardScroller.setHorizontalScrollBarEnabled(false);
         mCardScroller.setAdapter(new CardScrollAdapter() {
             @Override
             public int getCount() {
@@ -110,12 +115,6 @@ public class ProductLookupActivity extends Activity {
         super.onResume();
 
         mCardScroller.activate();
-
-        // show a slider (again) if we are looking up a product.
-        // Already done in the  asynctask's preexecute, but it is removed by the above scrollview's activate
-        if (mIsLookingUpProduct) {
-            mIndSlider = mSlider.startIndeterminate();
-        }
     }
 
     @Override
@@ -143,17 +142,70 @@ public class ProductLookupActivity extends Activity {
     }
 
     @Override
+    public boolean onCreatePanelMenu(int featureId, Menu menu) {
+        if (featureId == Window.FEATURE_OPTIONS_PANEL) {
+            getMenuInflater().inflate(R.menu.productlookup, menu);
+            return true;
+        }
+
+        // Pass through to super to setup touch menu.
+        return super.onCreatePanelMenu(featureId, menu);
+    }
+
+    /**
+     * onPreparePanel is called every time the menu is shown
+     * Here, we change what's in the menu based on the current state of the activity:
+     * - if the item has been sent to Trello already, don't show the menu option
+     * - since it is the only option in the menu, it will be disabled
+     */
+    @Override
+    public boolean onPreparePanel(int featureId, View view, Menu menu) {
+        if (featureId == Window.FEATURE_OPTIONS_PANEL) {
+            if (mSentToTrello) {
+                menu.findItem(R.id.savetotrello).setVisible(false);
+                if (!menu.hasVisibleItems()) {
+                    return false;
+                }
+            } else {
+                menu.findItem(R.id.savetotrello).setVisible(true);
+            }
+        }
+        // Pass through to super to setup touch menu.
+        return super.onPreparePanel(featureId, view, menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        if (featureId == Window.FEATURE_OPTIONS_PANEL) {
+            switch (item.getItemId()) {
+                case R.id.savetotrello:
+                    // we save the thumbnail to Trello
+                    mAddProductToTrelloTask = new AddProductToTrelloTask();
+                    mAddProductToTrelloTask.execute(mProduct);
+                    break;
+            }
+            return true;
+        }
+        return super.onMenuItemSelected(featureId, item);
+    }
+
+    @Override
     public boolean onKeyDown(int keycode, KeyEvent event) {
         if (keycode == KeyEvent.KEYCODE_DPAD_CENTER) {
             // user tapped touchpad
-            if (!mIsLookingUpProduct && mProduct == null) {
-                // no product found + tap = take picture
-                Intent myIntent = new Intent(this, TakePictureActivity.class);
-                startActivity(myIntent);
-                // don't return here after the TakePictureActivity returns
-                finish();
+            if (!mIsLookingUpProduct) {
+                if (mProduct == null) {
+                    // no product found + tap = take picture
+                    Intent myIntent = new Intent(this, TakePictureActivity.class);
+                    startActivity(myIntent);
+                    // don't return here after the TakePictureActivity returns
+                    finish();
 
-                return true;
+                    return true;
+                } else {
+                    openOptionsMenu();
+                    return true;
+                }
             }
         }
         return super.onKeyDown(keycode, event);
@@ -246,9 +298,6 @@ public class ProductLookupActivity extends Activity {
                 // fetch the product image
                 mImageDownloaderTask = new ImageDownloaderTask();
                 mImageDownloaderTask.execute(product.getImageURL());
-                // add the product to Trello
-                mAddProductToTrelloTask = new AddProductToTrelloTask();
-                mAddProductToTrelloTask.execute(product);
             } else {
                 am.playSoundEffect(Sounds.ERROR);
             }
@@ -329,7 +378,18 @@ public class ProductLookupActivity extends Activity {
         }
 
         @Override
+        protected void onPreExecute() {
+            // show progress bar
+            mIndSlider = mSlider.startIndeterminate();
+        }
+
+        @Override
         protected void onPostExecute(Boolean result) {
+            // hide the progress bar
+            if (mIndSlider != null) {
+                mIndSlider.hide();
+                mIndSlider = null;
+            }
             // play a nice sound
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             if (result) {
