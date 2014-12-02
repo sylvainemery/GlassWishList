@@ -14,11 +14,16 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 
 import com.google.android.glass.content.Intents;
 import com.google.android.glass.media.Sounds;
+import com.google.android.glass.view.MenuUtils;
 import com.google.android.glass.widget.CardBuilder;
+import com.google.android.glass.widget.CardScrollAdapter;
+import com.google.android.glass.widget.CardScrollView;
 import com.google.android.glass.widget.Slider;
 import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.MediaType;
@@ -43,8 +48,8 @@ public class TakePictureActivity extends Activity {
 
     private static final int TAKE_PICTURE_REQUEST = 1;
 
-    // THE view, no cardscrollview here
     private View mView;
+    private CardScrollView mCardScroller;
 
     // Slider used when saving to Trello
     private Slider.Indeterminate mIndSlider;
@@ -66,10 +71,48 @@ public class TakePictureActivity extends Activity {
         // capture an image
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, TAKE_PICTURE_REQUEST);
+
+        mCardScroller = new CardScrollView(this);
+        // disabling the scrollbar to let the indeterminate scroller work
+        mCardScroller.setHorizontalScrollBarEnabled(false);
+        mCardScroller.setAdapter(new CardScrollAdapter() {
+            @Override
+            public int getCount() {
+                return 1;
+            }
+
+            @Override
+            public Object getItem(int position) {
+                return mView;
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                return mView;
+            }
+
+            @Override
+            public int getPosition(Object item) {
+                if (mView.equals(item)) {
+                    return 0;
+                }
+                return AdapterView.INVALID_POSITION;
+            }
+        });
+        mView = buildView();
+        setContentView(mCardScroller);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mCardScroller.activate();
     }
 
     @Override
     protected void onPause() {
+        mCardScroller.deactivate();
         // hide the progress bar, if it was showing
         if (mIndSlider != null) {
             mIndSlider.hide();
@@ -102,10 +145,15 @@ public class TakePictureActivity extends Activity {
     @Override
     public boolean onPreparePanel(int featureId, View view, Menu menu) {
         if (featureId == Window.FEATURE_OPTIONS_PANEL) {
+            MenuItem menuItemSaveToTrello = menu.findItem(R.id.tp_savetotrello);
             if (mSavedToTrello) {
-                menu.findItem(R.id.savetotrello).setEnabled(false);
+                // already saved, disable the menu item
+                menuItemSaveToTrello.setEnabled(false);
+                // explain why the menu item is disabled
+                MenuUtils.setDescription(menuItemSaveToTrello, getString(R.string.menu_save_to_trello_already_sent));
             } else {
-                menu.findItem(R.id.savetotrello).setEnabled(true);
+                menuItemSaveToTrello.setEnabled(true);
+                MenuUtils.setDescription(menuItemSaveToTrello, null);
             }
         }
         // Pass through to super to setup touch menu.
@@ -125,14 +173,14 @@ public class TakePictureActivity extends Activity {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         if (featureId == Window.FEATURE_OPTIONS_PANEL) {
             switch (item.getItemId()) {
-                case R.id.retake:
+                case R.id.tp_retake:
                     // re-capture an image
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(intent, TAKE_PICTURE_REQUEST);
                     // reset the status because another picture will be taken. One should be able to upload it too.
                     mSavedToTrello = false;
                     break;
-                case R.id.savetotrello:
+                case R.id.tp_savetotrello:
                     // we save the thumbnail to Trello
                     mSaveTrelloTask = new SavePictureToTrelloTask();
                     mSaveTrelloTask.execute(thumbnailPath);
@@ -143,15 +191,15 @@ public class TakePictureActivity extends Activity {
         return super.onMenuItemSelected(featureId, item);
     }
 
-    protected void buildView() {
+    protected View buildView() {
         CardBuilder mCard = new CardBuilder(this, CardBuilder.Layout.CAPTION);
-        mCard.addImage(img);
-        if (mSavedToTrello) {
-            mCard.setText("Saved to Trello");
-            mCard.setIcon(R.drawable.ic_cloud_done_50);
+        if (img != null) {
+            mCard.addImage(img);
         }
-        mView = mCard.getView();
-        setContentView(mView);
+        if (mSavedToTrello) {
+            mCard.setAttributionIcon(R.drawable.ic_cloud_done_36);
+        }
+        return mCard.getView();
     }
 
 
@@ -166,7 +214,8 @@ public class TakePictureActivity extends Activity {
             if (file.exists()) {
                 img = BitmapFactory.decodeFile(thumbnailPath);
                 if (img != null) {
-                    buildView();
+                    mView = buildView();
+                    mCardScroller.getAdapter().notifyDataSetChanged();
                     openOptionsMenu();
                 }
             } else {
@@ -233,7 +282,8 @@ public class TakePictureActivity extends Activity {
                 mIndSlider.hide();
                 mIndSlider = null;
             }
-            buildView();
+            mView = buildView();
+            mCardScroller.getAdapter().notifyDataSetChanged();
 
             // play a nice sound
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);

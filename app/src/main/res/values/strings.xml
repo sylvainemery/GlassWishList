@@ -15,5 +15,6 @@
 
     <string name="menu_retake_picture">Re-take picture</string>
     <string name="menu_save_to_trello">Save to Trello</string>
+    <string name="menu_save_to_trello_already_sent">This picture has already been sent to Trello</string>
 
 </resources>
