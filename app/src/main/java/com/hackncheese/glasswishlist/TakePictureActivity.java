@@ -8,8 +8,6 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.FileObserver;
-import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -45,7 +43,7 @@ public class TakePictureActivity extends Activity {
 
     private static final int TAKE_PICTURE_REQUEST = 1;
 
-    // THE view
+    // THE view, no cardscrollview here
     private View mView;
 
     // Slider used when saving to Trello
@@ -96,6 +94,24 @@ public class TakePictureActivity extends Activity {
         return super.onCreatePanelMenu(featureId, menu);
     }
 
+    /**
+     * onPreparePanel is called every time the menu is shown
+     * Here, we change what's in the menu based on the current state of the activity:
+     * - if the item has been sent to Trello already, don't show that menu option
+     */
+    @Override
+    public boolean onPreparePanel(int featureId, View view, Menu menu) {
+        if (featureId == Window.FEATURE_OPTIONS_PANEL) {
+            if (mSavedToTrello) {
+                menu.findItem(R.id.savetotrello).setEnabled(false);
+            } else {
+                menu.findItem(R.id.savetotrello).setEnabled(true);
+            }
+        }
+        // Pass through to super to setup touch menu.
+        return super.onPreparePanel(featureId, view, menu);
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
@@ -113,6 +129,8 @@ public class TakePictureActivity extends Activity {
                     // re-capture an image
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(intent, TAKE_PICTURE_REQUEST);
+                    // reset the status because another picture will be taken. One should be able to upload it too.
+                    mSavedToTrello = false;
                     break;
                 case R.id.savetotrello:
                     // we save the thumbnail to Trello
