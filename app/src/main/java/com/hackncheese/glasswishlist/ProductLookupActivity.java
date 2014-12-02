@@ -162,12 +162,12 @@ public class ProductLookupActivity extends Activity {
     public boolean onPreparePanel(int featureId, View view, Menu menu) {
         if (featureId == Window.FEATURE_OPTIONS_PANEL) {
             if (mSentToTrello) {
-                menu.findItem(R.id.savetotrello).setVisible(false);
+                menu.findItem(R.id.pl_savetotrello).setVisible(false);
                 if (!menu.hasVisibleItems()) {
                     return false;
                 }
             } else {
-                menu.findItem(R.id.savetotrello).setVisible(true);
+                menu.findItem(R.id.pl_savetotrello).setVisible(true);
             }
         }
         // Pass through to super to setup touch menu.
@@ -178,7 +178,7 @@ public class ProductLookupActivity extends Activity {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         if (featureId == Window.FEATURE_OPTIONS_PANEL) {
             switch (item.getItemId()) {
-                case R.id.savetotrello:
+                case R.id.pl_savetotrello:
                     // we save the thumbnail to Trello
                     mAddProductToTrelloTask = new AddProductToTrelloTask();
                     mAddProductToTrelloTask.execute(mProduct);
