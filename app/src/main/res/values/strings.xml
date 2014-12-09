@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">GlassWishList</string>
+    <string name="glass_voice_trigger">add to wishlist</string>
 
     <string name="title_activity_scan">Scan a barcode</string>
 
